@@ -45,13 +45,13 @@
     };
 
     function styleLC23(feature) {
-      var c = feature.properties.class23;
+      var c = feature.properties.Class23;
       var color = landCoverColors[c] || "grey";
       return { color: color, weight: 1, fillColor: color, fillOpacity: 0.6 };
     }
 
     function styleLC13(feature) {
-      var c = feature.properties.class13;
+      var c = feature.properties.Class13;
       var color = landCoverColors[c] || "grey";
       return { color: color, weight: 1, fillColor: color, fillOpacity: 0.6 };
     }
@@ -82,12 +82,12 @@
     var lc23Layer = loadAndCombine([
       "data/LC23_B1.geojson",
       "data/LC23_B2.geojson"
-    ], styleLC23, "class23");
+    ], styleLC23, "Class23");
 
     var lc13Layer = loadAndCombine([
       "data/LC13_B1.geojson",
       "data/LC13_B2.geojson"
-    ], styleLC13, "class13");
+    ], styleLC13, "Class13");
 
     var villageLayer = loadAndCombine([
       "data/VillageBoundaries.geojson"
