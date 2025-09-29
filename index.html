@@ -29,7 +29,6 @@
 
     var map = L.map('map').setView([0, 115], 5);
 
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
@@ -101,7 +100,7 @@
       "Village Boundaries": villageLayer
     };
     L.control.layers(null, overlays).addTo(map);
-    
+
     eligibleLayer.addTo(map);
     villageLayer.addTo(map);
 
