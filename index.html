@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Interactive Web Map</title>
+  <title>CX Interactive Web Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     #map {
@@ -15,12 +15,11 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
 
   <script>
     var map = L.map('map').setView([-2.5, 118], 5);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var baseMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
@@ -31,7 +30,7 @@
 
     var blok = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/Blok.json";
     var cmi = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/CMI.json";
-    var village = "https://raw.githubusercontent.com/gis-carbonxweb-map/main/data/VillageBoundaries.json";
+    var village = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/VillageBoundaries.json";
 
     function styleLayer(color) {
       return {
@@ -41,29 +40,40 @@
       };
     }
 
+    var overlayLayers = {};
+
     fetch(lulc2023).then(r => r.json()).then(data => {
-      L.geoJSON(data, {style: styleLayer("green")}).addTo(map).bindPopup("LULC 2023");
+      overlayLayers["LULC 2023"] = L.geoJSON(data, {style: styleLayer("green")});
+      overlayLayers["LULC 2023"].addTo(map);
+      layerControl.addOverlay(overlayLayers["LULC 2023"], "LULC 2023");
     });
 
     fetch(lulc2013).then(r => r.json()).then(data => {
-      L.geoJSON(data, {style: styleLayer("orange")}).addTo(map).bindPopup("LULC 2013");
+      overlayLayers["LULC 2013"] = L.geoJSON(data, {style: styleLayer("orange")});
+      layerControl.addOverlay(overlayLayers["LULC 2013"], "LULC 2013");
     });
 
     fetch(eligibleArea).then(r => r.json()).then(data => {
-      L.geoJSON(data, {style: styleLayer("blue")}).addTo(map).bindPopup("Eligible Area");
+      overlayLayers["Eligible Area"] = L.geoJSON(data, {style: styleLayer("blue")});
+      layerControl.addOverlay(overlayLayers["Eligible Area"], "Eligible Area");
     });
 
     fetch(blok).then(r => r.json()).then(data => {
-      L.geoJSON(data, {style: styleLayer("red")}).addTo(map).bindPopup("Blok");
+      overlayLayers["Blok"] = L.geoJSON(data, {style: styleLayer("red")});
+      layerControl.addOverlay(overlayLayers["Blok"], "Blok");
     });
 
     fetch(cmi).then(r => r.json()).then(data => {
-      L.geoJSON(data, {style: styleLayer("purple")}).addTo(map).bindPopup("CMI");
+      overlayLayers["CMI"] = L.geoJSON(data, {style: styleLayer("purple")});
+      layerControl.addOverlay(overlayLayers["CMI"], "CMI");
     });
 
     fetch(village).then(r => r.json()).then(data => {
-      L.geoJSON(data, {style: styleLayer("brown")}).addTo(map).bindPopup("Village Boundaries");
+      overlayLayers["Village Boundaries"] = L.geoJSON(data, {style: styleLayer("brown")});
+      layerControl.addOverlay(overlayLayers["Village Boundaries"], "Village Boundaries");
     });
+
+    var layerControl = L.control.layers({"OpenStreetMap": baseMap}, overlayLayers).addTo(map);
   </script>
 </body>
 </html>
