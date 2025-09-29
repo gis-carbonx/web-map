@@ -2,55 +2,55 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Web Map - BNPB Hazard Data</title>
+  <title>Interactive Web Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
-  <style>
-    body { margin:0; padding:0; }
-    #map { width: 100%; height: 100vh; }
-  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-filelayer"></script>
+  <script src="https://unpkg.com/togeojson@0.16.0"></script>
+  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
 </head>
 <body>
-  <div id="map"></div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <script src="https://unpkg.com/plotty"></script>
-  <script src="https://unpkg.com/leaflet-geotiff"></script>
-  <script src="https://unpkg.com/leaflet-geotiff-plotty"></script>
+  <h3 style="text-align:center">Interactive Web Map with Upload</h3>
+  <div id="map" style="width: 100%; height: 90vh;"></div>
 
   <script>
 
-    var map = L.map('map').setView([-2, 118], 5);
+    var map = L.map('map').setView([-2, 117], 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    var kebakaran = new L.leafletGeotiff("data/Bahaya_KebakaranHutan_BNPB.tif", {
-      renderer: new L.LeafletGeotiff.Plotty({ colorScale: 'hot' }),
-      opacity: 0.7
-    });
+    function loadGeoJSON(url, name, color) {
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          L.geoJSON(data, {
+            style: { color: color, weight: 2, fillOpacity: 0.3 }
+          }).bindPopup(name).addTo(map);
+        })
+        .catch(err => console.error("Error loading " + name, err));
+    }
 
-    var gempa = new L.leafletGeotiff("data/Bahaya_Gempa_BNPB.tif", {
-      renderer: new L.LeafletGeotiff.Plotty({ colorScale: 'viridis' }),
-      opacity: 0.7
-    });
+    loadGeoJSON("https://drive.google.com/uc?id=1k-lkxY1hUZ_i807a-fTrs3tB7Vy-yW8H", "LULC2023", "green");
+    loadGeoJSON("https://drive.google.com/uc?id=1DIKQ48RuYtbpM2bdJ4-8a925eN6jKtfx", "LULC2013", "orange");
+    loadGeoJSON("https://drive.google.com/uc?id=1Lx1KSSsZazu6fM6_t3VbkjQEjGH52T2C", "Eligible Area", "blue");
 
-    var banjir = new L.leafletGeotiff("data/Bahaya_Banjir_BNPB.tif", {
-      renderer: new L.LeafletGeotiff.Plotty({ colorScale: 'rainbow' }),
-      opacity: 0.7
-    });
+    loadGeoJSON("data/Blok.json", "Blok", "red");
+    loadGeoJSON("data/VillageBoundaries.json", "Village Boundaries", "purple");
 
-    var overlayMaps = {
-      "Bahaya Kebakaran": kebakaran,
-      "Bahaya Gempa": gempa,
-      "Bahaya Banjir": banjir
-    };
+    L.Control.FileLayerLoad.LABEL = '<i class="fa fa-folder-open"></i>';
+    L.Control.fileLayerLoad({
+      fitBounds: true,
+      layerOptions: { style: { color: 'black', weight: 2, fillOpacity: 0.5 } }
+    }).addTo(map);
 
-    L.control.layers(null, overlayMaps).addTo(map);
   </script>
 </body>
 </html>
