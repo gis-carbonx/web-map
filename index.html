@@ -1,104 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>Interactive Web Map</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; }
-    #map { width: 100%; height: 100%; }
-    .custom-upload {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: white;
-      padding: 6px;
-      z-index: 1000;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    #map {
+      height: 100vh;
+      width: 100%;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <div class="custom-upload">
-    <label>Upload KML/ZIP Shapefile:
-      <input type="file" id="fileInput" />
-    </label>
-  </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
-  <script src="https://unpkg.com/togeojson@0.16.0"></script>
+  <script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
 
   <script>
-    var map = L.map('map').setView([0, 115], 5);
+    var map = L.map('map').setView([-2.5, 118], 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    function styleDefault(feature) {
-      return { color: '#3388ff', weight: 2, fillOpacity: 0.3 };
-    }
-    
-    function gdriveDirect(id) {
-      return "https://drive.google.com/uc?export=download&id=" + id;
-    }
+    var lulc2023 = "https://drive.google.com/uc?export=download&id=1k-lkxY1hUZ_i807a-fTrs3tB7Vy-yW8H";
+    var lulc2013 = "https://drive.google.com/uc?export=download&id=1DIKQ48RuYtbpM2bdJ4-8a925eN6jKtfx";
+    var eligibleArea = "https://drive.google.com/uc?export=download&id=1Lx1KSSsZazu6fM6_t3VbkjQEjGH52T2C";
 
-    function loadGeoJSON(url, name) {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          var layer = L.geoJSON(data, {style: styleDefault}).addTo(map);
-          layer.bindPopup(name);
-        })
-        .catch(err => console.error("Error loading " + name, err));
+    var blok = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/Blok.json";
+    var cmi = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/CMI.json";
+    var village = "https://raw.githubusercontent.com/gis-carbonxweb-map/main/data/VillageBoundaries.json";
+
+    function styleLayer(color) {
+      return {
+        color: color,
+        weight: 2,
+        fillOpacity: 0.3
+      };
     }
 
-    var LULC2023 = gdriveDirect("1k-lkxY1hUZ_i807a-fTrs3tB7Vy-yW8H");
-    var LULC2013 = gdriveDirect("1DIKQ48RuYtbpM2bdJ4-8a925eN6jKtfx");
-    var Eligible = gdriveDirect("1Lx1KSSsZazu6fM6_t3VbkjQEjGH52T2C");
+    fetch(lulc2023).then(r => r.json()).then(data => {
+      L.geoJSON(data, {style: styleLayer("green")}).addTo(map).bindPopup("LULC 2023");
+    });
 
-    loadGeoJSON(LULC2023, "LULC 2023");
-    loadGeoJSON(LULC2013, "LULC 2013");
-    loadGeoJSON(Eligible, "Eligible Area");
+    fetch(lulc2013).then(r => r.json()).then(data => {
+      L.geoJSON(data, {style: styleLayer("orange")}).addTo(map).bindPopup("LULC 2013");
+    });
 
-    fetch("data/extra.json")
-      .then(res => res.json())
-      .then(data => L.geoJSON(data, {style: styleDefault}).addTo(map));
+    fetch(eligibleArea).then(r => r.json()).then(data => {
+      L.geoJSON(data, {style: styleLayer("blue")}).addTo(map).bindPopup("Eligible Area");
+    });
 
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-      var file = e.target.files[0];
-      if (!file) return;
+    fetch(blok).then(r => r.json()).then(data => {
+      L.geoJSON(data, {style: styleLayer("red")}).addTo(map).bindPopup("Blok");
+    });
 
-      var reader = new FileReader();
-      var ext = file.name.split('.').pop().toLowerCase();
+    fetch(cmi).then(r => r.json()).then(data => {
+      L.geoJSON(data, {style: styleLayer("purple")}).addTo(map).bindPopup("CMI");
+    });
 
-      if (ext === "kml") {
-        reader.onload = function(e) {
-          var text = e.target.result;
-          var parser = new DOMParser();
-          var kml = parser.parseFromString(text, "text/xml");
-          var geojson = toGeoJSON.kml(kml);
-          L.geoJSON(geojson, {style: {color: 'red'}}).addTo(map);
-        };
-        reader.readAsText(file);
-      }
-      else if (ext === "zip") {
-        reader.onload = function(e) {
-          shp(e.target.result).then(function(geojson) {
-            L.geoJSON(geojson, {style: {color: 'green'}}).addTo(map);
-          });
-        };
-        reader.readAsArrayBuffer(file);
-      }
-      else {
-        alert("Please upload a KML or ZIP shapefile");
-      }
+    fetch(village).then(r => r.json()).then(data => {
+      L.geoJSON(data, {style: styleLayer("brown")}).addTo(map).bindPopup("Village Boundaries");
     });
   </script>
 </body>
