@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-filelayer"></script>
+
+  <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
   <script src="https://unpkg.com/togeojson@0.16.0"></script>
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://unpkg.com/shpjs@latest/dist/shp.min.js"></script>
+  <script src="https://unpkg.com/leaflet-filelayer"></script>
 </head>
 <body>
   <h3 style="text-align:center">Interactive Web Map</h3>
@@ -28,6 +28,7 @@
     };
 
     var overlays = {};
+    var layerControl = L.control.layers(baseMaps, overlays).addTo(map);
 
     function loadGeoJSON(url, name, color) {
       fetch(url)
@@ -44,22 +45,20 @@
         .catch(err => console.error("Error loading " + name, err));
     }
 
-    var layerControl = L.control.layers(baseMaps, overlays).addTo(map);
-
-    loadGeoJSON("https://drive.google.com/uc?id=1k-lkxY1hUZ_i807a-fTrs3tB7Vy-yW8H", "LULC2023", "green");
-    loadGeoJSON("https://drive.google.com/uc?id=1DIKQ48RuYtbpM2bdJ4-8a925eN6jKtfx", "LULC2013", "orange");
-    loadGeoJSON("https://drive.google.com/uc?id=1Lx1KSSsZazu6fM6_t3VbkjQEjGH52T2C", "Eligible Area", "blue");
+    loadGeoJSON("https://drive.google.com/uc?id=1k-lkxY1hUZ_i807a-fTrs3tB7Vy-yW8H&export=download", "LULC2023", "green");
+    loadGeoJSON("https://drive.google.com/uc?id=1DIKQ48RuYtbpM2bdJ4-8a925eN6jKtfx&export=download", "LULC2013", "orange");
+    loadGeoJSON("https://drive.google.com/uc?id=1Lx1KSSsZazu6fM6_t3VbkjQEjGH52T2C&export=download", "Eligible Area", "blue");
 
     loadGeoJSON("data/Blok.json", "Blok", "red");
     loadGeoJSON("data/VillageBoundaries.json", "Village Boundaries", "purple");
 
     L.Control.FileLayerLoad.LABEL = '<i class="fa fa-folder-open"></i>';
-    L.Control.fileLayerLoad({
+    var uploadControl = L.Control.fileLayerLoad({
       fitBounds: true,
       layerOptions: { style: { color: 'black', weight: 2, fillOpacity: 0.5 } },
       addToMap: true
-    }).addTo(map);
-
+    });
+    uploadControl.addTo(map);
   </script>
 </body>
 </html>
