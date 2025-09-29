@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>CX Interactive Web Map</title>
+  <title>Interactive Web Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     #map {
@@ -24,13 +24,12 @@
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    var lulc2023 = "https://drive.google.com/uc?export=download&id=1k-lkxY1hUZ_i807a-fTrs3tB7Vy-yW8H";
-    var lulc2013 = "https://drive.google.com/uc?export=download&id=1DIKQ48RuYtbpM2bdJ4-8a925eN6jKtfx";
-    var eligibleArea = "https://drive.google.com/uc?export=download&id=1Lx1KSSsZazu6fM6_t3VbkjQEjGH52T2C";
+    var lulc2023 = "https://drive.google.com/uc?export=download&id=1A-gtstSzRic0kevjLGWn48xJPfGpnPpD";
+    var lulc2013 = "https://drive.google.com/uc?export=download&id=1H6yXqBC4Oh_Q_ESNc25-9QdD6iAzxXOS";
+    var eligibleArea = "https://drive.google.com/uc?export=download&id=1zuDFcKogPHDfByHpsGp75ULx0W-2k8eJ";
 
-    var blok = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/Blok.json";
     var cmi = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/CMI.json";
-    var village = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/VillageBoundaries.json";
+    var village = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/VillageBoundaries.geojson";
 
     function styleLayer(color) {
       return {
@@ -56,11 +55,6 @@
     fetch(eligibleArea).then(r => r.json()).then(data => {
       overlayLayers["Eligible Area"] = L.geoJSON(data, {style: styleLayer("blue")});
       layerControl.addOverlay(overlayLayers["Eligible Area"], "Eligible Area");
-    });
-
-    fetch(blok).then(r => r.json()).then(data => {
-      overlayLayers["Blok"] = L.geoJSON(data, {style: styleLayer("red")});
-      layerControl.addOverlay(overlayLayers["Blok"], "Blok");
     });
 
     fetch(cmi).then(r => r.json()).then(data => {
