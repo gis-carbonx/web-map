@@ -2,72 +2,69 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Interactive Web Map</title>
+  <title>Web Map - Eligible Area & Land Cover</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    #map {
-      height: 100vh;
-      width: 100%;
-    }
+    #map { height: 100vh; }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
   <script>
-    var map = L.map('map').setView([-2.5, 118], 5);
+    var map = L.map('map').setView([0, 115], 5);
 
-    var baseMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    var lulc2023 = "https://drive.google.com/uc?export=download&id=1A-gtstSzRic0kevjLGWn48xJPfGpnPpD";
-    var lulc2013 = "https://drive.google.com/uc?export=download&id=1H6yXqBC4Oh_Q_ESNc25-9QdD6iAzxXOS";
-    var eligibleArea = "https://drive.google.com/uc?export=download&id=1zuDFcKogPHDfByHpsGp75ULx0W-2k8eJ";
-
-    var cmi = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/CMI.json";
-    var village = "https://raw.githubusercontent.com/gis-carbonx/web-map/main/data/VillageBoundaries.geojson";
-
-    function styleLayer(color) {
-      return {
-        color: color,
-        weight: 2,
-        fillOpacity: 0.3
-      };
+    function loadAndCombine(urls, style, groupName) {
+      var group = L.layerGroup();
+      urls.forEach(url => {
+        fetch(url)
+          .then(res => res.json())
+          .then(data => {
+            L.geoJSON(data, { style: style }).addTo(group);
+          });
+      });
+      return group;
     }
 
-    var overlayLayers = {};
+    var styleEligible = { color: "green", weight: 2, fillOpacity: 0.2 };
+    var styleLC23 = { color: "blue", weight: 2, fillOpacity: 0.2 };
+    var styleLC13 = { color: "orange", weight: 2, fillOpacity: 0.2 };
+    var styleVillage = { color: "red", weight: 1, fillOpacity: 0 };
 
-    fetch(lulc2023).then(r => r.json()).then(data => {
-      overlayLayers["LULC 2023"] = L.geoJSON(data, {style: styleLayer("green")});
-      overlayLayers["LULC 2023"].addTo(map);
-      layerControl.addOverlay(overlayLayers["LULC 2023"], "LULC 2023");
-    });
+    var eligibleLayer = loadAndCombine([
+      "data/Eligible_B1.geojson",
+      "data/Eligible_B2.geojson"
+    ], styleEligible, "Eligible Area");
 
-    fetch(lulc2013).then(r => r.json()).then(data => {
-      overlayLayers["LULC 2013"] = L.geoJSON(data, {style: styleLayer("orange")});
-      layerControl.addOverlay(overlayLayers["LULC 2013"], "LULC 2013");
-    });
+    var lc23Layer = loadAndCombine([
+      "data/LC23_B1.geojson",
+      "data/LC23_B2.geojson"
+    ], styleLC23, "Land Cover 2023");
 
-    fetch(eligibleArea).then(r => r.json()).then(data => {
-      overlayLayers["Eligible Area"] = L.geoJSON(data, {style: styleLayer("blue")});
-      layerControl.addOverlay(overlayLayers["Eligible Area"], "Eligible Area");
-    });
+    var lc13Layer = loadAndCombine([
+      "data/LC13_B1.geojson",
+      "data/LC13_B2.geojson"
+    ], styleLC13, "Land Cover 2013");
 
-    fetch(cmi).then(r => r.json()).then(data => {
-      overlayLayers["CMI"] = L.geoJSON(data, {style: styleLayer("purple")});
-      layerControl.addOverlay(overlayLayers["CMI"], "CMI");
-    });
+    var villageLayer = loadAndCombine([
+      "data/VillageBoundaries.geojson"
+    ], styleVillage, "Village Boundaries");
 
-    fetch(village).then(r => r.json()).then(data => {
-      overlayLayers["Village Boundaries"] = L.geoJSON(data, {style: styleLayer("brown")});
-      layerControl.addOverlay(overlayLayers["Village Boundaries"], "Village Boundaries");
-    });
+    var overlays = {
+      "Eligible Area": eligibleLayer,
+      "Land Cover 2023": lc23Layer,
+      "Land Cover 2013": lc13Layer,
+      "Village Boundaries": villageLayer
+    };
+    L.control.layers(null, overlays).addTo(map);
 
-    var layerControl = L.control.layers({"OpenStreetMap": baseMap}, overlayLayers).addTo(map);
+    eligibleLayer.addTo(map);
+    villageLayer.addTo(map);
   </script>
 </body>
 </html>
